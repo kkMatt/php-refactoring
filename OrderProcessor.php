@@ -1,32 +1,48 @@
 <?php
 
-class OrderProcessor {
-    public function processOrders($orders) {
-        foreach ($orders as $order) {
-            if ($order['status'] == 'pending') {
+final class OrderProcessor {
+    public function processOrders(array $orders)
+    {
+        foreach ($orders AS $order)
+        {
+            if (isset($order['status']) && $order['status'] == 'pending')
+            {
                 $total = 0;
-                foreach ($order['items'] as $item) {
-                    $total += $item['price'] * $item['quantity'];
-                }
-                
-                if ($total > 100) {
-                    $discount = $total * 0.1;
-                } else {
-                    $discount = 0;
+                if(isset($order['items']))
+                {
+                    foreach ($order['items'] AS $item)
+                    {
+                        if(isset($item['price'], $item['quantity']))
+                        {
+                            $total += $item['price'] * $item['quantity'];
+                        }
+                    }
                 }
 
+                // 10% discount for orders over 100
+                $discount = $total > 100 ? $total * 0.1 : 0;
+
                 $finalTotal = $total - $discount;
-                
-                if ($order['customer_type'] == 'vip') {
+
+                // Additional 10% discount from final amount for VIP customers
+                if (isset($order['customer_type']) && $order['customer_type'] == 'vip')
+                {
                     $finalTotal *= 0.9;
                 }
 
-                $this->sendEmail($order['customer_email'], "Your order total: $" . $finalTotal);
+                if(isset($order['customer_email']) && $order['customer_email'] != "")
+                {
+                    $this->sendEmail($order['customer_email'], "Your order total: $" . $finalTotal);
+                } else
+                {
+                    echo "Error: Customer e-mail is not provided\n";
+                }
             }
         }
     }
 
-    private function sendEmail($email, $message) {
+    private function sendEmail($email, $message)
+    {
         // Simulating email sending
         echo "Sending email to $email: $message\n";
     }
